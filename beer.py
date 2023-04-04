@@ -5,6 +5,8 @@ from simulai.file import SPFile
 from simulai.optimization import Optimizer
 from simulai.residuals import SymbolicOperator
 
+from pinn import BeerPINN
+
 # Basic configurations
 E_αd = 2.377e5
 
@@ -29,7 +31,25 @@ initial_states = U_s
 
 n_inputs = len(input_labels)
 n_outputs = len(output_labels)
+# α-Amylase
+A0_2 = 3.77e10
+A0_5 = 6.42e9
+E_α = 1.03e5
+k_α0 = 3.86e34 # min−1
+E_αd = 2.377e5
+H_α = 9.72e-5   # l/g/min
 
+# β-Amylase
+B0_3 = 1.62e40
+B0_4 = 1.05e42
+B0_6 = 1.09e41
+k_m = 2.8
+E_β = 2.93e5    # J/mol
+k_β0 = 9.46e67  # min−1
+E_βd = 4.539e5  # J/mol
+H_β = 7.57e-5   # l/g/min
+
+# Neural network training params
 lambda_1 = 0.0  # Penalty for the L¹ regularization (Lasso)
 lambda_2 = 0.0  # Penalty factor for the L² regularization
 n_epochs = 400_000  # Maximum number of iterations for ADAM
