@@ -1,6 +1,3 @@
-import os
-from argparse import ArgumentParser
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -8,18 +5,8 @@ from simulai.file import SPFile
 from simulai.optimization import Optimizer
 from simulai.residuals import SymbolicOperator
 
-import sympy
-
-Q = 1_000
-N = int(5e4)
-
 # Basic configurations
-alpha = 1.1
-beta = 0.4
-gamma = 0.4
-delta = 0.1
-dt = 0.01
-T_max = 300
+E_αd = 2.377e5
 
 initial_state_test = np.array([1, 0, 0])
 
@@ -37,12 +24,6 @@ output_labels = ["x", "y"]
 
 U_t = np.random.uniform(low=t_intv[0], high=t_intv[1], size=Q)
 U_s = np.random.uniform(low=s_intv[0], high=s_intv[1], size=(N, 2))
-
-branch_input_train = np.tile(U_s[:, None, :], (1, Q, 1)).reshape(N * Q, -1)
-trunk_input_train = np.tile(U_t[:, None], (N, 1))
-
-branch_input_test = np.tile(initial_state_test[None, :], (Q, 1))
-trunk_input_test = np.sort(U_t[:, None], axis=0)
 
 initial_states = U_s
 

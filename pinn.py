@@ -1,18 +1,4 @@
-# (C) Copyright IBM Corp. 2019, 2020, 2021, 2022.
 
-#    Licensed under the Apache License, Version 2.0 (the "License");
-#    you may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-
-#           http://www.apache.org/licenses/LICENSE-2.0
-
-#     Unless required by applicable law or agreed to in writing, software
-#     distributed under the License is distributed on an "AS IS" BASIS,
-#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#     See the License for the specific language governing permissions and
-#     limitations under the License.
-
-import matplotlib.pyplot as plt
 import numpy as np
 
 from simulai.file import SPFile
@@ -66,58 +52,7 @@ class BeerPINN:
         x_0 = -1
         T = 1
 
-        # Generating the training grid
 
-        x_interval = [x_0, L]
-        t_interval = [0, T]
-
-        intervals = [x_interval, t_interval]
-
-        intv_array = np.vstack(intervals).T
-
-        # Regular grid
-        x_0, x_L = x_interval
-        t_0, t_L = t_interval
-        dx = (x_L - x_0) / X_DIM
-        dt = (t_L - t_0) / T_DIM
-
-        grid = np.mgrid[t_0 + dt : t_L + dt : dt, x_0:x_L:dx]
-
-        data = np.hstack([grid[1].flatten()[:, None], grid[0].flatten()[:, None]])
-
-        data_init = np.linspace(*x_interval, X_DIM)
-        u_init = (data_init**2) * np.cos(np.pi * data_init)[:, None]
-
-        # Boundary grids
-        data_boundary_x0 = np.hstack(
-            [
-                x_interval[0] * np.ones((T_DIM, 1)),
-                np.linspace(*t_interval, T_DIM)[:, None],
-            ]
-        )
-
-        data_boundary_xL = np.hstack(
-            [
-                x_interval[-1] * np.ones((T_DIM, 1)),
-                np.linspace(*t_interval, T_DIM)[:, None],
-            ]
-        )
-
-        data_boundary_t0 = np.hstack(
-            [
-                np.linspace(*x_interval, X_DIM)[:, None],
-                t_interval[0] * np.ones((X_DIM, 1)),
-            ]
-        )
-
-        # Visualizing the training mesh
-        plt.scatter(*np.split(data, 2, axis=1))
-        plt.scatter(*np.split(data_boundary_x0, 2, axis=1))
-        plt.scatter(*np.split(data_boundary_xL, 2, axis=1))
-        plt.scatter(*np.split(data_boundary_t0, 2, axis=1))
-
-        plt.show()
-        plt.close()
 
         n_epochs = 50_000  # Maximum number of iterations for ADAM
         lr = 1e-3  # Initial learning rate for the ADAM algorithm
