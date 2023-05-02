@@ -1,3 +1,3 @@
-simulai-toolkit
-matplotlib
-
+torch>1.13,<1.14
+pandas=2.0
+lightning>2.0,<2.1
