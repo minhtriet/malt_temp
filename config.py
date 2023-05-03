@@ -1,1 +1,1 @@
-INPUT_LENGTH = 10
+INPUT_LENGTH = 2  # for derivative calculation
