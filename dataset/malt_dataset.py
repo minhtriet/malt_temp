@@ -25,5 +25,5 @@ class MaltDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.input[idx:idx+self.len_input], \
-            self.output[idx:idx+self.len_input][[self.output_to_index['BetaAmilase'],
+            self.output[idx:idx+self.len_input, [self.output_to_index['BetaAmilase'],
                                                  self.output_to_index['BetaAmilase_grain']]]
