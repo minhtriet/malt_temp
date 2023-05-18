@@ -1,4 +1,3 @@
-
 R = 8.3144598  # Universal Gas Constant
 Ta = 273.15  # Celcius to Kelvin
 
@@ -13,7 +12,7 @@ Halpha = 9.72 * 10 ** -5  # Dissolution coefficient
 
 Kbeta0 = 9.46 * 10 ** 67  # Beta Amylase Pre-exponential coefficient min^-1
 Edbeta = 4.439 * 10 ** 5  # Beta Amylase Activation energy J/mol
-Hbeta = 7.57 * 10 ** -5  # Dissolution coefficient
+H_beta = 7.57 * 10 ** -5  # Dissolution coefficient
 
 # Starch Conversion
 Agmlt0 = 6.42 * 10 ** 9  # Maltotriose Pre-exponential coefficient min^-1
