@@ -1,6 +1,7 @@
 import torch
+import config
 from torch.utils.data import Dataset
-
+from sklearn.preprocessing import StandardScaler
 
 class MaltDataset(Dataset):
     def __init__(self, df, len_input):
@@ -11,6 +12,11 @@ class MaltDataset(Dataset):
             SolidosNaoFermentaveis,SolidosTotais,PercFermentaveis,Extrato,MashingEfficiency,Dp1,Dp2,Dp3,Dp4Plus
         :param len_input: Length of each slice of the dataset to feed to the nn
         """
+        # scaling
+        self.scaler = StandardScaler()
+        n_train = int(config.TRAIN_RATIO * len(df))
+        df.iloc[:n_train] = self.scaler.fit_transform(df.iloc[:n_train])
+        df.iloc[n_train:] = self.scaler.transform(df.iloc[n_train:])
         self.len_input = len_input
         input_columns = ['Time', 'Temperature']
         # input
