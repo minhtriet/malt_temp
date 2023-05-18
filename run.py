@@ -9,12 +9,17 @@ import config
 from dataset import malt_dataset
 from malt_temp import model, initial_condition, pl_pinn_model
 
+pl.seed_everything(1234, workers=True)
+
 path_input = PurePath("dataset", "Mash_Data.csv")
 mash_data = pd.read_csv(path_input)
 
-dataset = malt_dataset.MaltDataset(mash_data.tail(len(mash_data)-1), len_input=config.INPUT_LENGTH)
-dataloader = DataLoader(dataset)
+dataset = malt_dataset.MaltDataset(mash_data.tail(len(mash_data) - 1), len_input=config.INPUT_LENGTH)
+train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset, [0.6, 0.2, 0.2])
 
+train_dataloader = DataLoader(train_dataset)  # todo try different kind of sampler
+val_dataloader = DataLoader(val_dataset)
+test_dataloader = DataLoader(test_dataset)
 
 if torch.backends.mps.is_available():
     device = torch.device("mps")
@@ -32,13 +37,11 @@ initial_cond = initial_condition.InitialCondition(time=mash_data.iloc[0]['Time']
 
 pinn_model = model.PINN_Model(nodes=4, layers=1, y0=initial_cond)
 
-pl.seed_everything(1234, workers=True)
-
 pl_model = pl_pinn_model.PLPinnModule(pinn_model)
-trainer = pl.Trainer()
+trainer = pl.Trainer(max_epochs=5)
 
 # train the model
-trainer.fit(pl_model, train_dataloaders=DataLoader(dataset))   # todo add val_loader
+trainer.fit(pl_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
 # todo jacobian tricks
 # Their net production rates are much lower than their
