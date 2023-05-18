@@ -2,8 +2,8 @@ from collections import namedtuple
 from malt_temp import mash_data
 
 InitialCondition = namedtuple("InitialCondition",
-                              "alpha_adjust grain_alpha_adjust beta_adjust grain_beta_adjust starch_adjust dextrins_adjust")
-
+                              "time temperature beta grain_beta alpha_adjust grain_alpha_adjust beta_adjust grain_beta_adjust")
+Output = namedtuple("Output", "beta grain_beta")
 
 InitialAlfa = 0                   # U/kg
 InitialGrainAlpha = 1588000        # U/kg
@@ -19,6 +19,14 @@ InitialLimitDextrins = 0          # Limit Dextrins g/kg
 Efic = 59.24
 Yeld = 59.24
 Factor = Yeld/Efic
+
+MaltWeight = 0.05                                            # kg
+#Mash Thickness - liquor-to-grist ratio
+# 2 to 4 l/kg
+WaterToMaltRatio = 4                                         # l/kg
+WaterVolume = MaltWeight *  WaterToMaltRatio  * 10**-3       # m^3
+GrainVolumeRatio = 0.656 * 10**-3                           # m^3/kg
+MaltVolume = MaltWeight * GrainVolumeRatio                   # m^3
 
 InitialAlfa_Adjust = Factor*InitialAlfa*mash_data.MaltWeight/(mash_data.water_volume*1000)                        # U/l
 InitialGrainAlpha_Adjust = Factor * InitialGrainAlpha * mash_data.MaltWeight / (mash_data.water_volume * 1000)    # U/l
