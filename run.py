@@ -13,39 +13,14 @@ from malt_temp import model, initial_condition
 path_input = PurePath("dataset", "Mash_Data.csv")
 mash_data = pd.read_csv(path_input)
 
-ic = initial_condition.InitialCondition(
-    time=mash_data.iloc[0]['Time'],
-    temperature=mash_data.iloc[0]['Temperature'],
-    alpha_adjust=initial_condition.InitialAlfa_Adjust,
-    grain_alpha_adjust=initial_condition.InitialGrainAlpha_Adjust,
-    beta_adjust=initial_condition.InitialBeta_Adjust,
-    grain_beta_adjust=initial_condition.InitialGrainBeta_Adjust
-)
-
-dataset = malt_dataset.MaltDataset(path_input, len_input=config.INPUT_LENGTH)
+dataset = malt_dataset.MaltDataset(path_input)
 dataloader = DataLoader(dataset)
-
-
-ic = initial_condition.InitialCondition(
-    time=mash_data.iloc[0]['Time'],
-    temperature=mash_data.iloc[0]['Temperature'],
-    alpha_adjust=initial_condition.InitialAlfa_Adjust,
-    grain_alpha_adjust=initial_condition.InitialGrainAlpha_Adjust,
-    beta_adjust=initial_condition.InitialBeta_Adjust,
-    grain_beta_adjust=initial_condition.InitialGrainBeta_Adjust
-)
 
 if torch.backends.mps.is_available():
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
 
-initial_cond = initial_condition.InitialCondition(alpha_adjust=initial_condition.InitialAlfa_Adjust,
-                                                  grain_alpha_adjust=initial_condition.InitialGrainAlpha_Adjust,
-                                                  beta_adjust=initial_condition.InitialBeta_Adjust,
-                                                  grain_beta_adjust=initial_condition.InitialGrainBeta_Adjust,
-                                                  starch_adjust=initial_condition.InitialStarch_Adjust,
-                                                  dextrins_adjust=initial_condition.InitialDextrins_Adjust)
 
 net = model.PINN_Model(len_input=config.INPUT_LENGTH, nodes=22, layers=1, y0=initial_cond)
 criterion = MSELoss()

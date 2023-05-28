@@ -1,30 +1,25 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
-from simulai.file import SPFile
-from simulai.optimization import Optimizer
-from simulai.residuals import SymbolicOperator
-
-from pinn import BeerPINN
+from malt_temp import model
 
 # Basic configurations
-E_αd = 2.377e5
+# E_αd = 2.377e5
 
-initial_state_test = np.array([1, 0, 0])
+# initial_state_test = np.array([1, 0, 0])
 
-t_intv = [0, 1]
-s_intv = np.stack([[10, 2], [50, 20]], axis=0)
+# t_intv = [0, 1]
+# s_intv = np.stack([[10, 2], [50, 20]], axis=0)
 
 # The expression we aim at minimizing
-f_1 = "D(α_g,t) + 1/nu_g*H_α*M*(α_g - α)"
-f_2 = "D(β_g,t) + 1/nu_g*H_β*M*(β_g - β)"
-f_3 = "D(α,t) - 1/nu*( H_α*M*(α_g - α) - k_α*α)"
-f_4 = "D(β,t) + 1/nu*( H_β*M*(β_g - β) - k_β*β)"
+# f_1 = "D(α_g,t) + 1/nu_g*H_α*M*(α_g - α)"
+# f_2 = "D(β_g,t) + 1/nu_g*H_β*M*(β_g - β)"
+# f_3 = "D(α,t) - 1/nu*( H_α*M*(α_g - α) - k_α*α)"
+# f_4 = "D(β,t) + 1/nu*( H_β*M*(β_g - β) - k_β*β)"
 
-input_labels = ["t"]
-output_labels = ["x", "y"]
+# input_labels = ["t"]
+# output_labels = ["x", "y"]
 
-beerPINN = BeerPINN()
+# beerPINN = BeerPINN()
 
 # U_t = np.random.uniform(low=t_intv[0], high=t_intv[1], size=Q)
 # U_s = np.random.uniform(low=s_intv[0], high=s_intv[1], size=(N, 2))
@@ -63,7 +58,7 @@ residual = SymbolicOperator(
     input_vars=input_labels,
     output_vars=output_labels,
     function=beerPINN.net,
-    constants={"A0_2": A0_2, "betha": beta, "gammma": gamma, "delta": delta},
+    constants={"A0_2": A0_2},
     device="cpu",
     engine="torch"
 )
@@ -71,6 +66,8 @@ residual = SymbolicOperator(
 # Maximum derivative magnitudes to be used as loss weights
 penalties = [1, 1]
 batch_size = 10_000
+
+data = np.random.random((10,10))
 
 optimizer_config = {"lr": lr}
 
@@ -85,19 +82,22 @@ optimizer = Optimizer(
     },
 )
 
+# data_boundary_xL
+# todo Create a gird, similar to figure 1
 params = {
-    "lambda_1": lambda_1,
-    "lambda_2": lambda_2,
     "residual": residual,
-    "initial_input": {"input_trunk": np.zeros((N, 1)), "input_branch": initial_states},
-    "initial_state": initial_states,
-    "weights_residual": [1, 1],
-    "weights": penalties,
+    "initial_input": data_boundary_t0,
+    "initial_state": u_init,
+    "boundary_input": {"upper": data_boundary_xL, "lower": data_boundary_x0},
+    "boundary_penalties": [1, 1],
+    "initial_penalty": 10,
+    "causality_preserving": True,
+    "grid_shape": (T_DIM, X_DIM),
+    "causality_parameter": 0.10,
 }
-
 optimizer.fit(
-    op=lotka_volterra_net,
-    input_data=input_data,
+    op=beerPINN.net,
+    input_data=data,
     n_epochs=n_epochs,
     loss="opirmse",
     params=params,
@@ -106,46 +106,17 @@ optimizer.fit(
 )
 
 # Saving model
-print("Saving model.")
-saver = SPFile(compact=False)
-saver.write(
-    save_dir=save_path,
-    name="lotka_volterra_deeponet",
-    model=lotka_volterra_net,
-    template=model,
-)
+# print("Saving model.")
+# saver = SPFile(compact=False)
+# saver.write(
+#     save_dir='.',
+#     name="test",
+#     model=lotka_volterra_net,
+#     template=model,
+# )
 
 
 def test_allen_cahn(self):
-    # Our PDE
-    # Allen-cahn equation
-
-    f = "D(u, t) - mu*D(D(u, x), x) + alpha*(u**3) + beta*u"
-
-    g_u = "u"
-    g_ux = "D(u, x)"
-
-    input_labels = ["x", "t"]
-    output_labels = ["u"]
-
-    # Some fixed values
-    X_DIM = 256
-    T_DIM = 100
-
-    L = 1
-    x_0 = -1
-    T = 1
-
-
-
-    n_epochs = 50_000  # Maximum number of iterations for ADAM
-    lr = 1e-3  # Initial learning rate for the ADAM algorithm
-
-    
-
-    optimizer_config = {"lr": lr}
-
-    net = model()
 
     residual = SymbolicOperator(
         expressions=[f],
