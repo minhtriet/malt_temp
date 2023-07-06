@@ -2,7 +2,6 @@ import lightning.pytorch as pl
 import torch
 import torch.functional as F
 
-
 class PLPinnModule(pl.LightningModule):
     def __init__(self, model):
         super().__init__()
