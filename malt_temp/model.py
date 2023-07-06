@@ -1,8 +1,8 @@
-import torch
 import torch.nn as nn
 
 import malt_temp.initial_condition as initial_condition
 
+from torch.autograd import functional as autograd_f
 
 class PINN_Model(nn.Module):
     # def __init__(self, nodes, layers, y0: initial_condition.InitialCondition, w_scale, x_scale=1):
@@ -47,4 +47,6 @@ class PINN_Model(nn.Module):
 
     def forward(self, x):
         # return self.seq(torch.log(x / self.x_scale)) * (x / self.x_scale) * self.w_scale + self.y0
-        return self.seq(x)
+        y = self.seq(x)
+        jacobian = autograd_f.jacobian(self.seq, x)
+        return y, jacobian
