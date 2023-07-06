@@ -14,7 +14,7 @@ path_input = PurePath("dataset", "Mash_Data.csv")
 dataset = malt_dataset.MaltDataset(path_input)
 dataloader = DataLoader(dataset)
 
-if torch.backends.mps.is_available():
+if torch.backends.mps.is_available():   # todo torch lightning
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
@@ -26,8 +26,8 @@ net.train()
 for idx, data in enumerate(dataloader):
     x, y = data['x'], data['y']
     optimizer.zero_grad()
-    out = net(x)
-    loss_data = criterion(y, out)
+    predict, jacobian = net(x)
+    loss_data = criterion(y, predict)  # todo move to pytorch lighting
     loss_physic = 7
     optimizer.step()
 
