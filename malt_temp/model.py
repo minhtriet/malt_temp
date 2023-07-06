@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 import malt_temp.initial_condition as initial_condition
@@ -19,13 +20,13 @@ class PINN_Model(nn.Module):
         """
         super(PINN_Model, self).__init__()
 
-        self.y0 = y0
+        self.y0 = torch.Tensor([y0.beta, y0.grain_beta])
         # self.w_scale = w_scale
         # self.x_scale = x_scale
 
         self.activation = nn.GELU()
         self.seq = nn.Sequential()
-        self.seq.add_module('fc_1', nn.Linear(2, nodes))
+        self.seq.add_module('fc_1', nn.Linear(2, nodes))  # 2 is time + temperature
         self.seq.add_module('relu_1', self.activation)
         for i in range(layers):
             self.seq.add_module('fc_' + str(i + 2), nn.Linear(nodes, nodes))
@@ -45,8 +46,23 @@ class PINN_Model(nn.Module):
                 nn.init.constant_(m.weight, w0)
                 nn.init.constant_(m.bias, w0)
 
+    def _forward_nn(self, x):
+        """
+        Run the forward pass of the model
+        :param x: input to the nn
+        :return:
+            y has shape (1,1,2)
+        """
+        y = self.seq(x) + self.y0
+        return y
+
     def forward(self, x):
-        # return self.seq(torch.log(x / self.x_scale)) * (x / self.x_scale) * self.w_scale + self.y0
-        y = self.seq(x)
-        jacobian = autograd_f.jacobian(self.seq, x)
-        return y, jacobian
+        """
+        :param x: Float Tensor with shape (1,2) for (time, temperature)
+
+        :return: (prediction), (gradients for PINN)
+        """
+        x.requires_grad_()  # record what happens with x
+        jacobian = torch.autograd.functional.jacobian(self._forward_nn, x).squeeze()
+        y = self._forward_nn(x)
+        return y, (jacobian[0][0], jacobian[0][1])  # todo use initial_condition.Output
