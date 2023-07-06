@@ -1,23 +1,63 @@
 from pathlib import PurePath
 
+import lightning.pytorch as pl
 import pandas as pd
 import torch
-from torch.nn import MSELoss
-from torch.optim import Adam
 from torch.utils.data import DataLoader
 
 from dataset import malt_dataset
-from malt_temp import model, initial_condition
+from malt_temp import model, initial_condition, pl_pinn_model
+
+pl.seed_everything(1234, workers=True)
 
 path_input = PurePath("dataset", "Mash_Data.csv")
 
-dataset = malt_dataset.MaltDataset(path_input)
+ic = initial_condition.InitialCondition(
+    time=mash_data.iloc[0]['Time'],
+    temperature=mash_data.iloc[0]['Temperature'],
+    alpha_adjust=initial_condition.InitialAlfa_Adjust,
+    grain_alpha_adjust=initial_condition.InitialGrainAlpha_Adjust,
+    beta_adjust=initial_condition.InitialBeta_Adjust,
+    grain_beta_adjust=initial_condition.InitialGrainBeta_Adjust
+)
+
+dataset = malt_dataset.MaltDataset(path_input, len_input=config.INPUT_LENGTH)
 dataloader = DataLoader(dataset)
 
 if torch.backends.mps.is_available():   # todo torch lightning
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
+print(device)
+
+train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset, [0.6, 0.2, 0.2])
+
+train_dataloader = DataLoader(train_dataset)  # todo try different kind of sampler
+val_dataloader = DataLoader(val_dataset)
+test_dataloader = DataLoader(test_dataset)
+
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+
+initial_cond = initial_condition.InitialCondition(time=mash_data.iloc[0]['Time'],
+                                                  temperature=mash_data.iloc[0]['Temperature'],
+                                                  beta=mash_data.iloc[0]['BetaAmilase'],
+                                                  grain_beta=mash_data.iloc[0]['BetaAmilase_grain'],
+                                                  alpha_adjust=initial_condition.InitialAlfa_Adjust,
+                                                  grain_alpha_adjust=initial_condition.InitialGrainAlpha_Adjust,
+                                                  beta_adjust=initial_condition.InitialBeta_Adjust,
+                                                  grain_beta_adjust=initial_condition.InitialGrainBeta_Adjust)
+
+pinn_model = model.PINN_Model(nodes=4, layers=1, y0=initial_cond)
+
+pl_model = pl_pinn_model.PLPinnModule(pinn_model)
+trainer = pl.Trainer(max_epochs=5)
+
+# train the model
+trainer.fit(pl_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+
 print(device)
 net = model.PINN_Model(nodes=22, layers=1, y0=dataset.__getitem__(0)['y'])
 criterion = MSELoss()

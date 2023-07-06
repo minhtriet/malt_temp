@@ -1,16 +1,25 @@
-import logging
-
-import pandas as pd
-import torch
 from torch.utils.data import Dataset
-
+from sklearn.preprocessing import StandardScaler
+import config
+import logging
+import torch
 
 class MaltDataset(Dataset):
-    """A dataset that contains the envolvement of the concentration of the malt sacharization
-    temperature is a constant till now
-    """
-    def __init__(self, filepath):
-        df = pd.read_csv(filepath)
+    def __init__(self, df, len_input):
+        """
+        :param filepath: A df that contains the columns
+            Time,Temperature,AlfaAmilase,AlfaAmilase_Grain,BetaAmilase,BetaAmilase_grain,
+            Starch,Dextrins,Glucose,Maltose,Maltotriose,Limit_Dextrins,SolidosFermentaveis,
+            SolidosNaoFermentaveis,SolidosTotais,PercFermentaveis,Extrato,MashingEfficiency,Dp1,Dp2,Dp3,Dp4Plus
+        :param len_input: Length of each slice of the dataset to feed to the nn
+        """
+        # scaling
+        self.scaler = StandardScaler()
+        n_train = int(config.TRAIN_RATIO * len(df))
+        df.iloc[:n_train] = self.scaler.fit_transform(df.iloc[:n_train])
+        df.iloc[n_train:] = self.scaler.transform(df.iloc[n_train:])
+        self.len_input = len_input
+        input_columns = ['Time', 'Temperature']
         # input
         self.time, self.temp = df['Time'].values, df['Temperature'].values
         # output
