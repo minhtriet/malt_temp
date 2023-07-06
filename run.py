@@ -6,12 +6,10 @@ from torch.nn import MSELoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 
-import config
 from dataset import malt_dataset
 from malt_temp import model, initial_condition
 
 path_input = PurePath("dataset", "Mash_Data.csv")
-mash_data = pd.read_csv(path_input)
 
 dataset = malt_dataset.MaltDataset(path_input)
 dataloader = DataLoader(dataset)
@@ -20,16 +18,15 @@ if torch.backends.mps.is_available():
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
-
-
-net = model.PINN_Model(len_input=config.INPUT_LENGTH, nodes=22, layers=1, y0=initial_cond)
+print(device)
+net = model.PINN_Model(nodes=22, layers=1, y0=dataset.__getitem__(0)['y'])
 criterion = MSELoss()
 optimizer = Adam(net.parameters(), lr=0.01)
 net.train()
 for idx, data in enumerate(dataloader):
-    time, temp, y = data
+    x, y = data['x'], data['y']
     optimizer.zero_grad()
-    out = net(time)
+    out = net(x)
     loss_data = criterion(y, out)
     loss_physic = 7
     optimizer.step()
